@@ -15,7 +15,7 @@ A single-page calculator that converts Fibonacci story points into approximate h
 ## Features
 
 - **Live calculation** – Changing the sprint length (weeks) or hours per day updates the table immediately.
-- **Points-to-hours table** – Shows each Fibonacci point value with its approximate hours and a size label (Tiny, ~N days, Medium, Large, Very large, Bigger than your whole sprint).
+- **Points-to-hours table** – Shows each Fibonacci point value with its approximate hours range (min–max) and a size label (Tiny, ~N days, Medium, Large, Very large, Bigger than your whole sprint).
 - **Sprint-relative sizing** – Size labels are based on the share of the sprint a story takes up, so they stay meaningful for any sprint length.
 - **Auto-extending scale** – Always shows 1–21 points, and adds more Fibonacci values until one exceeds the whole sprint.
 - **Saved settings** – Inputs are stored in the browser's `localStorage`, which does not expire.
@@ -79,6 +79,7 @@ SprintPlan/
 **Calculation**
 - Sprint days = weeks × 5 working days; sprint hours = sprint days × hours per day.
 - 1 point = half a working day, so hours = points × (hours per day ÷ 2).
+- Approx. hours is a min–max range running halfway to the neighbouring Fibonacci values (e.g. 3 points covers 2.5–4 points' worth of hours).
 - Size labels by share of the sprint:
 
 | Share of sprint | Label |
@@ -94,13 +95,13 @@ Example for a 2-week sprint at 6 hours per day (60 hours):
 
 | Points | Approx. hours | Size |
 |---|---|---|
-| 1 | 3 | Tiny |
-| 2 | 6 | ~1 day |
-| 3 | 9 | ~1.5 days |
-| 5 | 15 | Medium (~2.5 days) |
-| 8 | 24 | Large (~4 days) |
-| 13 | 39 | Very large, consider splitting |
-| 21 | 63 | Bigger than your whole sprint, must split |
+| 1 | 1.5–4.5 | Tiny |
+| 2 | 4.5–7.5 | ~1 day |
+| 3 | 7.5–12 | ~1.5 days |
+| 5 | 12–19.5 | Medium (~2.5 days) |
+| 8 | 19.5–31.5 | Large (~4 days) |
+| 13 | 31.5–51 | Very large, consider splitting |
+| 21 | 51–82.5 | Bigger than your whole sprint, must split |
 
 ## Deployment
 

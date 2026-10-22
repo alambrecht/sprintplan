@@ -38,6 +38,16 @@ function fibonacciPoints(hoursPerPoint, sprintHours) {
     return points;
 }
 
+// Range runs halfway to the neighbouring Fibonacci values on each side
+function hoursRange(points, i, hoursPerPoint) {
+    const prev = i > 0 ? points[i - 1] : 0;
+    const next = i < points.length - 1 ? points[i + 1] : points[i] + prev;
+    return {
+        min: (prev + points[i]) / 2 * hoursPerPoint,
+        max: (points[i] + next) / 2 * hoursPerPoint,
+    };
+}
+
 function describe(points, hours, days, sprintHours) {
     const fraction = hours / sprintHours;
     if (fraction > 1) return { text: 'Bigger than your whole sprint, must split', cls: 'danger', icon: 'fa-scissors' };
@@ -73,12 +83,14 @@ function calculate() {
         `<strong>${plural(sprintDays, 'day')}</strong> × ${fmt(hoursPerDay)} h = ` +
         `<strong>${fmt(sprintHours)} hour</strong> sprint &middot; 1 point ≈ ${fmt(hoursPerPoint)} h`;
 
-    results.innerHTML = fibonacciPoints(hoursPerPoint, sprintHours).map(points => {
+    const allPoints = fibonacciPoints(hoursPerPoint, sprintHours);
+    results.innerHTML = allPoints.map((points, i) => {
         const hours = points * hoursPerPoint;
+        const { min, max } = hoursRange(allPoints, i, hoursPerPoint);
         const d = describe(points, hours, hours / hoursPerDay, sprintHours);
         return `<tr>
             <td><span class="badge text-bg-${d.cls} points-badge">${points}</span></td>
-            <td>${fmt(hours)}</td>
+            <td>${fmt(min)}–${fmt(max)}</td>
             <td><i class="fa-solid ${d.icon} text-${d.cls} me-2"></i>${d.text}</td>
         </tr>`;
     }).join('');
