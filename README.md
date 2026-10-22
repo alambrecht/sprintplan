@@ -15,9 +15,9 @@ A single-page calculator that converts Fibonacci story points into approximate h
 ## Features
 
 - **Live calculation** – Changing the sprint length (weeks) or hours per day updates the table immediately.
-- **Points-to-hours table** – Shows each Fibonacci point value with its approximate hours range (min–max) and a size label (Tiny, ~N days, Medium, Large, Very large, Bigger than your whole sprint).
+- **Points-to-hours table** – Shows each Fibonacci point value with its approximate hours range (min–max) and a size label (Tiny, ~N days, Medium, Large, Very large, May not fit in your sprint, Bigger than your whole sprint).
 - **Sprint-relative sizing** – Size labels are based on the share of the sprint a story takes up, so they stay meaningful for any sprint length.
-- **Auto-extending scale** – Always shows 1–21 points, and adds more Fibonacci values until one exceeds the whole sprint.
+- **Auto-extending scale** – Always shows 1–21 points, and adds more Fibonacci values until one whose whole hours range exceeds the sprint.
 - **Saved settings** – Inputs are stored in the browser's `localStorage`, which does not expire.
 - **Sensible defaults** – A 2-week sprint at 8 hours per day.
 
@@ -84,7 +84,8 @@ SprintPlan/
 
 | Share of sprint | Label |
 |---|---|
-| More than 100% | Bigger than your whole sprint, must split |
+| Whole range (min hours) over the sprint | Bigger than your whole sprint, must split |
+| Top of range (max hours) over the sprint | May not fit in your sprint, consider splitting |
 | More than 50% | Very large, consider splitting |
 | 35% or more | Large (~N days) |
 | 20% or more | Medium (~N days) |
@@ -101,7 +102,8 @@ Example for a 2-week sprint at 6 hours per day (60 hours):
 | 5 | 12–19.5 | Medium (~2.5 days) |
 | 8 | 19.5–31.5 | Large (~4 days) |
 | 13 | 31.5–51 | Very large, consider splitting |
-| 21 | 51–82.5 | Bigger than your whole sprint, must split |
+| 21 | 51–82.5 | May not fit in your sprint, consider splitting |
+| 34 | 82.5–133.5 | Bigger than your whole sprint, must split |
 
 ## Deployment
 

@@ -29,10 +29,11 @@ function plural(n, word) {
     return `${fmt(n)} ${word}${n === 1 ? '' : 's'}`;
 }
 
-// Fibonacci sequence up to 21, extended until one value exceeds the whole sprint
+// Fibonacci sequence up to 21, extended until one value's whole range exceeds the sprint
 function fibonacciPoints(hoursPerPoint, sprintHours) {
     const points = [1, 2];
-    while (points[points.length - 1] < 21 || points[points.length - 1] * hoursPerPoint <= sprintHours) {
+    const minHours = () => hoursRange(points, points.length - 1, hoursPerPoint).min;
+    while (points[points.length - 1] < 21 || minHours() <= sprintHours) {
         points.push(points[points.length - 1] + points[points.length - 2]);
     }
     return points;
@@ -48,9 +49,10 @@ function hoursRange(points, i, hoursPerPoint) {
     };
 }
 
-function describe(points, hours, days, sprintHours) {
+function describe(points, hours, days, sprintHours, range) {
     const fraction = hours / sprintHours;
-    if (fraction > 1) return { text: 'Bigger than your whole sprint, must split', cls: 'danger', icon: 'fa-scissors' };
+    if (range.min > sprintHours) return { text: 'Bigger than your whole sprint, must split', cls: 'danger', icon: 'fa-scissors' };
+    if (range.max > sprintHours) return { text: 'May not fit in your sprint, consider splitting', cls: 'warning', icon: 'fa-triangle-exclamation' };
     if (fraction > 0.5) return { text: 'Very large, consider splitting', cls: 'warning', icon: 'fa-triangle-exclamation' };
     if (fraction >= 0.35) return { text: `Large (~${plural(days, 'day')})`, cls: 'info', icon: 'fa-weight-hanging' };
     if (fraction >= 0.2) return { text: `Medium (~${plural(days, 'day')})`, cls: 'primary', icon: 'fa-cube' };
@@ -86,11 +88,11 @@ function calculate() {
     const allPoints = fibonacciPoints(hoursPerPoint, sprintHours);
     results.innerHTML = allPoints.map((points, i) => {
         const hours = points * hoursPerPoint;
-        const { min, max } = hoursRange(allPoints, i, hoursPerPoint);
-        const d = describe(points, hours, hours / hoursPerDay, sprintHours);
+        const range = hoursRange(allPoints, i, hoursPerPoint);
+        const d = describe(points, hours, hours / hoursPerDay, sprintHours, range);
         return `<tr>
             <td><span class="badge text-bg-${d.cls} points-badge">${points}</span></td>
-            <td>${fmt(min)}–${fmt(max)}</td>
+            <td>${fmt(range.min)}–${fmt(range.max)}</td>
             <td><i class="fa-solid ${d.icon} text-${d.cls} me-2"></i>${d.text}</td>
         </tr>`;
     }).join('');
