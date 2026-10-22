@@ -1,0 +1,93 @@
+const STORAGE_KEY = 'sprintPlanSettings';
+const DEFAULTS = { weeks: 2, hoursPerDay: 8 };
+const WORK_DAYS_PER_WEEK = 5;
+
+const weeksInput = document.getElementById('weeks');
+const hoursInput = document.getElementById('hoursPerDay');
+const summary = document.getElementById('summary');
+const results = document.getElementById('results');
+
+function loadSettings() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (saved) return { ...DEFAULTS, ...saved };
+    } catch (e) { /* storage unavailable or corrupt */ }
+    return { ...DEFAULTS };
+}
+
+function saveSettings(settings) {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    } catch (e) { /* storage unavailable */ }
+}
+
+function fmt(n) {
+    return Number.isInteger(n) ? String(n) : n.toFixed(1).replace(/\.0$/, '');
+}
+
+function plural(n, word) {
+    return `${fmt(n)} ${word}${n === 1 ? '' : 's'}`;
+}
+
+// Fibonacci sequence up to 21, extended until one value exceeds the whole sprint
+function fibonacciPoints(hoursPerPoint, sprintHours) {
+    const points = [1, 2];
+    while (points[points.length - 1] < 21 || points[points.length - 1] * hoursPerPoint <= sprintHours) {
+        points.push(points[points.length - 1] + points[points.length - 2]);
+    }
+    return points;
+}
+
+function describe(points, hours, days, sprintHours) {
+    const fraction = hours / sprintHours;
+    if (fraction > 1) return { text: 'Bigger than your whole sprint, must split', cls: 'danger', icon: 'fa-scissors' };
+    if (fraction > 0.5) return { text: 'Very large, consider splitting', cls: 'warning', icon: 'fa-triangle-exclamation' };
+    if (fraction >= 0.35) return { text: `Large (~${plural(days, 'day')})`, cls: 'info', icon: 'fa-weight-hanging' };
+    if (fraction >= 0.2) return { text: `Medium (~${plural(days, 'day')})`, cls: 'primary', icon: 'fa-cube' };
+    if (points === 1) return { text: 'Tiny', cls: 'success', icon: 'fa-feather' };
+    return { text: `~${plural(days, 'day')}`, cls: 'success', icon: 'fa-check' };
+}
+
+function calculate() {
+    const weeks = parseFloat(weeksInput.value);
+    const hoursPerDay = parseFloat(hoursInput.value);
+    const valid = weeks > 0 && hoursPerDay > 0 && hoursPerDay <= 24;
+
+    weeksInput.classList.toggle('is-invalid', !(weeks > 0));
+    hoursInput.classList.toggle('is-invalid', !(hoursPerDay > 0 && hoursPerDay <= 24));
+
+    if (!valid) {
+        summary.innerHTML = '<i class="fa-solid fa-circle-exclamation me-1"></i>Enter a positive number of weeks and 0–24 hours per day.';
+        results.innerHTML = '';
+        return;
+    }
+
+    saveSettings({ weeks, hoursPerDay });
+
+    const sprintDays = weeks * WORK_DAYS_PER_WEEK;
+    const sprintHours = sprintDays * hoursPerDay;
+    const hoursPerPoint = hoursPerDay / 2;
+
+    summary.innerHTML =
+        `<i class="fa-solid fa-calculator me-1"></i>` +
+        `<strong>${plural(sprintDays, 'day')}</strong> × ${fmt(hoursPerDay)} h = ` +
+        `<strong>${fmt(sprintHours)} hour</strong> sprint &middot; 1 point ≈ ${fmt(hoursPerPoint)} h`;
+
+    results.innerHTML = fibonacciPoints(hoursPerPoint, sprintHours).map(points => {
+        const hours = points * hoursPerPoint;
+        const d = describe(points, hours, hours / hoursPerDay, sprintHours);
+        return `<tr>
+            <td><span class="badge text-bg-${d.cls} points-badge">${points}</span></td>
+            <td>${fmt(hours)}</td>
+            <td><i class="fa-solid ${d.icon} text-${d.cls} me-2"></i>${d.text}</td>
+        </tr>`;
+    }).join('');
+}
+
+const settings = loadSettings();
+weeksInput.value = settings.weeks;
+hoursInput.value = settings.hoursPerDay;
+
+weeksInput.addEventListener('input', calculate);
+hoursInput.addEventListener('input', calculate);
+calculate();
